@@ -1,5 +1,10 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CreateProjectDTO, EditProjectDTO } from './dto';
+import {
+  CreateProjectDTO,
+  EditProjectDTO,
+  CreateTaskDTO,
+  EditTaskDTO,
+} from './dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
@@ -37,6 +42,9 @@ export class ProjectService {
       where: {
         id: projectId,
         ownerId: userId,
+      },
+      include: {
+        tasks: true,
       },
     });
 
@@ -92,5 +100,105 @@ export class ProjectService {
         }
       }
     }
+  }
+
+  // Task routes
+  async createTask(userId: string, projectId: string, dto: CreateTaskDTO) {
+    // Check if project exists and user is owner
+    const project = await this.prismaService.project.findUnique({
+      where: {
+        ownerId: userId,
+        id: projectId,
+      },
+    });
+
+    if (!project) {
+      throw new UnauthorizedException(
+        'You are not authorized to access this project',
+      );
+    }
+
+    // Create task
+    const task = await this.prismaService.task.create({
+      data: {
+        ...dto,
+        project: {
+          connect: {
+            id: projectId,
+          },
+        },
+      },
+    });
+
+    // Return task
+    return task;
+  }
+
+  async updateTask(
+    userId: string,
+    projectId: string,
+    taskId: string,
+    dto: EditTaskDTO,
+  ) {
+    // Check if project exists and user is owner
+    const project = await this.prismaService.project.findUnique({
+      where: {
+        ownerId: userId,
+        id: projectId,
+      },
+    });
+
+    if (!project) {
+      throw new UnauthorizedException(
+        'You are not authorized to access this project',
+      );
+    }
+
+    // Update task
+    const task = await this.prismaService.task.update({
+      where: {
+        id: taskId,
+        project: {
+          ownerId: userId,
+          id: projectId,
+        },
+      },
+      data: {
+        ...dto,
+      },
+    });
+
+    // Return task
+    return task;
+  }
+
+  async deleteTask(userId: string, projectId: string, taskId: string) {
+    // Check if project exists and user is owner
+    const project = await this.prismaService.project.findUnique({
+      where: {
+        ownerId: userId,
+        id: projectId,
+      },
+    });
+
+    if (!project) {
+      throw new UnauthorizedException(
+        'You are not authorized to access this project',
+      );
+    }
+
+    // Delete task
+    const task = await this.prismaService.task.delete({
+      where: {
+        id: taskId,
+        project: {
+          ownerId: userId,
+          id: projectId,
+        },
+      },
+    });
+
+    // Return task
+    return task;
   }
 }

@@ -12,6 +12,8 @@ import { JwtGuard } from '../auth/guard';
 import { ProjectService } from './project.service';
 import { GetUSer } from '../auth/decorator';
 import { CreateProjectDTO, EditProjectDTO } from './dto';
+import { CreateTaskDTO } from './dto/create-tastk.dto';
+import { EditTaskDTO } from './dto/edit-task.dto';
 
 @UseGuards(JwtGuard)
 @Controller('projects')
@@ -54,5 +56,34 @@ export class ProjectController {
     @Param('projectId') projectId: string,
   ) {
     return await this.projectService.deleteProject(userId, projectId);
+  }
+
+  // Task routes
+  @Post('/:projectId/tasks')
+  async createTask(
+    @GetUSer('id') userId: string,
+    @Param('projectId') projectId: string,
+    @Body() dto: CreateTaskDTO,
+  ) {
+    return await this.projectService.createTask(userId, projectId, dto);
+  }
+
+  @Patch('/:projectId/tasks/:taskId')
+  async updateTask(
+    @GetUSer('id') userId: string,
+    @Param('projectId') projectId: string,
+    @Param('taskId') taskId: string,
+    @Body() dto: EditTaskDTO,
+  ) {
+    return await this.projectService.updateTask(userId, projectId, taskId, dto);
+  }
+
+  @Delete('/:projectId/tasks/:taskId')
+  async deleteTask(
+    @GetUSer('id') userId: string,
+    @Param('projectId') projectId: string,
+    @Param('taskId') taskId: string,
+  ) {
+    return await this.projectService.deleteTask(userId, projectId, taskId);
   }
 }
