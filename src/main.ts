@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors(); // Add this line
-
+  app.useGlobalPipes(new ValidationPipe()); // Enable global pipes
+  app.enableCors(); // Enable CORS
   app.setGlobalPrefix('api/v1'); // Set the global prefix to /api/v1/
-
   await app.listen(3000);
 }
 
