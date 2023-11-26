@@ -4,7 +4,11 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe()); // Enable global pipes
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Remove unknown properties from DTOs
+    }),
+  ); // Enable global pipes
   app.enableCors(); // Enable CORS
   app.setGlobalPrefix('api/v1'); // Set the global prefix to /api/v1/
   await app.listen(3000);
